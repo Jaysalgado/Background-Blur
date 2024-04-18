@@ -4,6 +4,28 @@ A simple application to blur images using Python and OpenCV.
 
 ## How to run
 
+### Prerequisites
+
+Make sure you have Python installed. If you're on Windows, make sure Python is added to PATH.
+
+### Windows
+
+Make a virtual environment:
+
+`py -m venv env`
+
+Start the virtual environment:
+
+`activate`
+
+Install the dependencies
+
+`pip install -r requirements.txt`
+
+Run the application
+
+`py main.py`
+
 ### Mac
 
 Make a virtual environment:
