@@ -14,7 +14,7 @@ class App(tk.Tk):
         self.button = tk.Button(self, text="Please select an image", command=self.open_image)
         self.button.pack(anchor='center')
         
-        self.blur = tk.Scale(self, from_=0, to=15, orient=tk.HORIZONTAL)
+        self.blur = tk.Scale(self, from_=0, to=25, orient=tk.HORIZONTAL)
         self.blur.pack(anchor='center')
         
         self.canvas = tk.Canvas(self)
