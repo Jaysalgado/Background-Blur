@@ -43,7 +43,7 @@ class Vision:
         clicked_on_object = False
         
         # make image visible again
-        image = image.permute(1, 2, 0).mul(255).byte().numpy() #back into visualization format
+        image = image.permute(1, 2, 0).mul(255).byte().numpy()
         image = Image.fromarray(image)
         
         # mask and blur image
@@ -54,13 +54,17 @@ class Vision:
                 clicked_on_object = True
                 
                 # create the mask around the subject
-                mask = mask.mul(255).byte().cpu().numpy()
-                mask = np.array(mask, dtype=np.uint8)
-                mask = Image.fromarray(mask, mode="L")
-                inverted_mask = ImageOps.invert(mask.convert('L')) 
-                blurred_image = image.filter(ImageFilter.GaussianBlur(radius=blur_radius))
-                # Create a composite image using the inverted mask to combine
-                # the blurred image with the original image in the area defined by the mask.
+                mask = mask.mul(255).byte().cpu().numpy()          # turns subject's pixel values into 1's, to distinctly separate subject from background (which are 0's)
+                mask = np.array(mask, dtype=np.uint8)              # turn the points in the mask into an array
+                mask = Image.fromarray(mask, mode="L")             # create an image from the array
+                inverted_mask = ImageOps.invert(mask.convert('L')) # flip the mask so the rest of the image is turned into 1's, and subject is 0's
+                blurred_image = image.filter(                      # blur the original image
+                    ImageFilter.GaussianBlur(radius=blur_radius)
+                )
+                
+                # based on the inverted mask make a composite image by selecting
+                # pixels from the blurred image for background (1's), and pixels from
+                # the original image from the subject (0's)
                 composite_image = Image.composite(blurred_image, image, inverted_mask)
                 return composite_image
         
