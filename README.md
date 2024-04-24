@@ -1,6 +1,6 @@
 ## What is this?
 
-A simple application to blur images using Python and OpenCV.
+A simple application to blur images using Python and TorchVision.
 
 ## How to run
 
