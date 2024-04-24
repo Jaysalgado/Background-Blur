@@ -62,7 +62,6 @@ class Vision:
                 # the blurred image with the original image in the area defined by the mask.
                 composite_image = Image.composite(blurred_image, image, inverted_mask)
                 return composite_image
-                break  
         
         if not clicked_on_object:
             return None

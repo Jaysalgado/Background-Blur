@@ -21,8 +21,10 @@ class App(tk.Tk):
         self.canvas = tk.Canvas(self)
         self.canvas.pack(anchor='center', fill=tk.BOTH, expand=True)
         
+        self.label = None
+        
         # make window get created in the center of the screen
-        self.resize_window()
+        self.resize_window(self)
 
         # max image size to display within the app
         self.max_width = 1080
@@ -62,18 +64,12 @@ class App(tk.Tk):
             self.canvas.create_image(0, 0, anchor=tk.NW, image=photo)
             
             # instructions label
-            self.label = tk.Label(self, text="Please click on a subject to blur the image.", anchor='center', font=("Arial", 12))
-            self.label.pack()
+            if self.label == None:
+                self.label = tk.Label(self, text="Please click on a subject to blur the image.", anchor='center', font=("Arial", 12))
+                self.label.pack()
             
             # resize window to fit image
-            self.update_idletasks()
-            window_width = self.winfo_reqwidth()
-            window_height = self.winfo_reqheight()
-            screen_width = self.winfo_screenwidth()
-            screen_height = self.winfo_screenheight()
-            x_cordinate = int((screen_width/2) - (window_width/2))
-            y_cordinate = int((screen_height/2) - (window_height/2))
-            self.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
+            self.resize_window(self)
             
             # prevent image from being garbage collected
             self.canvas.image = photo
@@ -109,11 +105,21 @@ class App(tk.Tk):
         image_window = tk.Toplevel(self)
         image_window.title("Blurred Image")
 
-        image_canvas = tk.Canvas(image_window, width=image.width, height=image.height)
-        image_canvas.pack()
+        width, height = image.size
+        self.ratio = 1
+        if width > self.max_width or height > self.max_height:
+            self.ratio = min(self.max_width / width, self.max_height / height)
+            width = int(width * self.ratio)
+            height = int(height * self.ratio)
+            resized_image = image.resize((width, height), Image.Resampling.LANCZOS)
+            photo = ImageTk.PhotoImage(resized_image)
+        else:
+            photo = ImageTk.PhotoImage(image)
 
-        self.photo = ImageTk.PhotoImage(image)
-        image_canvas.create_image(0, 0, anchor=tk.NW, image=self.photo)
+        image_canvas = tk.Canvas(image_window, width=width, height=height)
+        image_canvas.pack()
+        image_canvas.create_image(0, 0, anchor=tk.NW, image=photo)
+        image_canvas.image = photo
 
         # Create a button to save the image
         save_button = tk.Button(image_window, text="Save Image", command=lambda: self.save_image(image))
@@ -125,12 +131,12 @@ class App(tk.Tk):
         if file_path:
             image.save(file_path)
             
-    def resize_window(self):
-        self.update_idletasks()
-        window_width = self.winfo_reqwidth()
-        window_height = self.winfo_reqheight()
-        screen_width = self.winfo_screenwidth()
-        screen_height = self.winfo_screenheight()
+    def resize_window(self, window):
+        window.update_idletasks()
+        window_width = window.winfo_reqwidth()
+        window_height = window.winfo_reqheight()
+        screen_width = window.winfo_screenwidth()
+        screen_height = window.winfo_screenheight()
         x_cordinate = int((screen_width/2) - (window_width/2))
         y_cordinate = int((screen_height/2) - (window_height/2))
         self.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
