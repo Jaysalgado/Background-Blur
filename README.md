@@ -43,3 +43,10 @@ Install the dependencies
 Run the application
 
 `python3.11 main.py`
+
+## How to use
+
+1. Select an image using the button
+2. Use the slider to determine how much the background should be blurred
+3. Click on a subject in the image to blur the background around it
+4. If you would like to save the image, a new window will open once a subject is clicked, and there is a button to save the blurred image

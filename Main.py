@@ -14,6 +14,9 @@ class App(tk.Tk):
         self.button = tk.Button(self, text="Please select an image", command=self.open_image)
         self.button.pack(anchor='center')
         
+        blur_label = tk.Label(self, text='Blur Amount', font=("Arial", 15))
+        blur_label.pack()
+        
         self.blur = tk.Scale(self, from_=0, to=25, orient=tk.HORIZONTAL)
         self.blur.pack(anchor='center')
         
@@ -64,7 +67,7 @@ class App(tk.Tk):
             
             # instructions label
             if self.label == None:
-                self.label = tk.Label(self, text="Please click on a subject to blur the image.", anchor='center', font=("Arial", 12))
+                self.label = tk.Label(self, text="Please click on a subject to blur the image.", anchor='center', font=("Arial", 15))
                 self.label.pack()
             
             # resize window to fit image
