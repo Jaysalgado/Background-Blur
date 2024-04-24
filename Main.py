@@ -2,27 +2,139 @@
 import tkinter as tk
 from tkinter import filedialog
 import os
+from cnn import Vision
+from PIL import Image, ImageTk
 
-def BlurImage(event=None):
-    filename = filedialog.askopenfilename()
-    print('Selected:', filename)
-    
-    blur_radius = w.get()  # Get the blur radius from the scale widget
-    print("blurradius:", blur_radius)
-    
-    # Construct the command to call the cnn.py script with the selected image filename and blur radius
-    cmd = f'python "cnn.py" "{filename}" {blur_radius}'
-    
-    # Execute the command
-    os.system(cmd)
+class App(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        
+        self.title('Image Subject Masking')
+        
+        # app widgets
+        self.button = tk.Button(self, text="Please select an image", command=self.open_image)
+        self.button.pack(anchor='center')
+        
+        self.blur = tk.Scale(self, from_=0, to=15, orient=tk.HORIZONTAL)
+        self.blur.pack(anchor='center')
+        
+        self.canvas = tk.Canvas(self)
+        self.canvas.pack(anchor='center', fill=tk.BOTH, expand=True)
+        
+        # make window get created in the center of the screen
+        self.resize_window()
 
-root = tk.Tk()
-root.geometry("400x400")
+        # max image size to display within the app
+        self.max_width = 1080
+        self.max_height = 720
+        
+        # computer vision class
+        self.vision = Vision()
+        
+        # prediction variables
+        self.image = None
+        self.predicted_image = None
+        self.prediction = None
+        self.ratio = 1
+        self.file_path = None
+        
+    # opens image and displays it in the app
+    def open_image(self, event=None):
+        file_path = filedialog.askopenfilename()
+        if file_path:
+            self.image = Image.open(file_path)
+            self.file_path = file_path
 
-button = tk.Button(root, text="Let's Go", command=BlurImage)
-button.pack()
+            # Resize image if necessary
+            width, height = self.image.size
+            self.ratio = 1
+            if width > self.max_width or height > self.max_height:
+                self.ratio = min(self.max_width / width, self.max_height / height)
+                width = int(width * self.ratio)
+                height = int(height * self.ratio)
+                resized_image = self.image.resize((width, height), Image.Resampling.LANCZOS)
+                photo = ImageTk.PhotoImage(resized_image)
+            else:
+                photo = ImageTk.PhotoImage(self.image)
+            
+            # display new image
+            self.canvas.config(width=width, height=height)
+            self.canvas.create_image(0, 0, anchor=tk.NW, image=photo)
+            
+            # instructions label
+            self.label = tk.Label(self, text="Please click on a subject to blur the image.", anchor='center', font=("Arial", 12))
+            self.label.pack()
+            
+            # resize window to fit image
+            self.update_idletasks()
+            window_width = self.winfo_reqwidth()
+            window_height = self.winfo_reqheight()
+            screen_width = self.winfo_screenwidth()
+            screen_height = self.winfo_screenheight()
+            x_cordinate = int((screen_width/2) - (window_width/2))
+            y_cordinate = int((screen_height/2) - (window_height/2))
+            self.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
+            
+            # prevent image from being garbage collected
+            self.canvas.image = photo
+            
+            self.predicted_image, self.prediction = self.vision.load_image(self.file_path)
+            
+            self.bind("<Button-1>", self.on_canvas_click)
+            
+    # detects when the canvas is clicked, and gets the x and y of the canvas that's clicked
+    def on_canvas_click(self, event):
+        if isinstance(event.widget, tk.Canvas):
+            canvas = event.widget
+            x = canvas.canvasx(event.x)
+            y = canvas.canvasy(event.y)
+            
+            # if the image is larger than the window, make sure x and y are compensated for the image blurring
+            if self.ratio < 1:
+                x = x/self.ratio
+                y = y/self.ratio
+                
+            # blur image
+            blurred_image = self.vision.blur_image((x, y), self.prediction, self.predicted_image, self.blur.get())
+            
+            # show blurred image in new window
+            if blurred_image:
+                self.new_window(blurred_image)
+                self.label.config(text="Please click on a subject to blur the image.")
+            else:
+                self.label.config(text="No subject detected! Please click on another subject.")
+                
+    # creates a new window with the ability to save the image
+    def new_window(self, image):
+        image_window = tk.Toplevel(self)
+        image_window.title("Blurred Image")
 
-w = tk.Scale(root, from_=0, to=200, orient=tk.HORIZONTAL)
-w.pack()
+        image_canvas = tk.Canvas(image_window, width=image.width, height=image.height)
+        image_canvas.pack()
 
-root.mainloop()
+        self.photo = ImageTk.PhotoImage(image)
+        image_canvas.create_image(0, 0, anchor=tk.NW, image=self.photo)
+
+        # Create a button to save the image
+        save_button = tk.Button(image_window, text="Save Image", command=lambda: self.save_image(image))
+        save_button.pack()
+        
+    # save image to filename of user's choice
+    def save_image(self, image):
+        file_path = filedialog.asksaveasfilename(defaultextension=".png")
+        if file_path:
+            image.save(file_path)
+            
+    def resize_window(self):
+        self.update_idletasks()
+        window_width = self.winfo_reqwidth()
+        window_height = self.winfo_reqheight()
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        x_cordinate = int((screen_width/2) - (window_width/2))
+        y_cordinate = int((screen_height/2) - (window_height/2))
+        self.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
+
+if __name__ == '__main__':
+    app = App()
+    app.mainloop()
