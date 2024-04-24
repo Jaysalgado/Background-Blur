@@ -1,10 +1,8 @@
 import torchvision
-from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageFilter
+from PIL import Image, ImageOps, ImageFilter
 import torchvision.transforms as T
 import torch
 import numpy as np
-import matplotlib.pyplot as plt
-import sys
 
 # detectable objects
 COCO_INSTANCE_CATEGORY_NAMES = [
@@ -24,6 +22,7 @@ COCO_INSTANCE_CATEGORY_NAMES = [
 
 class Vision:
     def __init__(self):
+        # model for predictions
         self.model = torchvision.models.detection.maskrcnn_resnet50_fpn_v2(pretrained=True)
         self.model.eval()
 
@@ -53,6 +52,8 @@ class Vision:
             mask = masks[i, 0]  # Extract the i-th mask 
             if mask[y, x].item() == 1:  # Check if the clicked point is within the object
                 clicked_on_object = True
+                
+                # create the mask around the subject
                 mask = mask.mul(255).byte().cpu().numpy()
                 mask = np.array(mask, dtype=np.uint8)
                 mask = Image.fromarray(mask, mode="L")
