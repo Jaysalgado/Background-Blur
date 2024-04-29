@@ -57,3 +57,15 @@ Run the application
 2. Use the slider to determine how much the background should be blurred
 3. Click on a subject in the image to blur the background around it
 4. If you would like to save the image, a new window will open once a subject is clicked, and there is a button to save the blurred image
+
+## Example of before and after (Blur set to level 3)
+### Before
+
+![image](https://github.com/Jaysalgado/Background-Blur/assets/121132051/06804dd6-f4ef-4412-a9b5-a6f02619789e)
+
+### After
+
+![Blurred](https://github.com/Jaysalgado/Background-Blur/assets/121132051/c5c5c5cb-e298-4778-8877-05e1edc5679c)
+
+
+
