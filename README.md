@@ -1,6 +1,13 @@
-## What is this?
+# Background-Blur Application
 
-A simple application to blur images using Python and TorchVision.
+## Introduction
+Background-Blur is an application that uses a convolutional neural network (CNN) based on the Mask R-CNN architecture with a ResNet-50 FPN backbone, implemented using torchvision. This application allows users to interactively select any object in an uploaded image. The selected object remains in focus while the rest of the image is blurred, emphasizing the selected object.
+
+## Features
+- Interactive GUI built with Tkinter.
+- Utilizes pretrained CNN models from torchvision to detect objects.
+- Allows users to adjust the intensity of the blur.
+- Option to save the modified image.
 
 ## How to run
 
